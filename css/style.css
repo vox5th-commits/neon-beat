@@ -22,20 +22,31 @@
 
 html, body {
   width: 100%;
+  max-width: 100%;
   height: 100%;
   height: 100dvh;
   overflow: hidden;
+  overflow-x: hidden;
   background: var(--bg0);
   color: var(--text);
   font-family: var(--font-ui);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  position: relative;
 }
 
 #app {
   position: relative;
   width: 100%;
+  max-width: 100%;
   height: 100%;
+  overflow: hidden;
+  overflow-x: hidden;
+}
+
+body.playing-game {
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 .app-banner {
@@ -76,7 +87,11 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .screen.active {
@@ -102,9 +117,11 @@ html, body {
 
 /* Title */
 .title-panel {
-  width: min(560px, 92vw);
-  padding: 2.2rem 2rem 1.8rem;
+  width: min(560px, 100%);
+  max-width: 100%;
+  padding: 2.2rem 1.25rem 1.8rem;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .logo {
@@ -210,10 +227,13 @@ html, body {
 /* Top bar */
 .top-bar {
   width: min(980px, 100%);
+  max-width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.4rem;
+  box-sizing: border-box;
+  gap: 0.5rem;
 }
 
 .top-bar h1 {
@@ -228,9 +248,11 @@ html, body {
 /* Songs */
 .song-list {
   width: min(980px, 100%);
+  max-width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: 1.1rem;
+  box-sizing: border-box;
 }
 
 .song-card {
@@ -278,10 +300,12 @@ html, body {
 /* Difficulty */
 .diff-layout {
   width: min(860px, 100%);
+  max-width: 100%;
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
   gap: 1.5rem;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .diff-jacket {
@@ -331,21 +355,91 @@ html, body {
 
 /* Game */
 #screen-game {
-  padding: 0;
+  padding: 0 !important;
   background: #05010c;
-  /* full viewport; no letterboxing */
   align-items: stretch;
   justify-content: stretch;
+  overflow: hidden;
 }
 
 #game-canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  max-width: 100%;
   display: block;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
   cursor: pointer;
+  z-index: 1;
+}
+
+/* DOM touch pad — reliable mobile input */
+.touch-pad {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 8px 6px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  height: 26%;
+  min-height: 110px;
+  max-height: 200px;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.55) 30%);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.touch-pad.hidden {
+  display: none !important;
+}
+
+.touch-key {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 2px solid var(--lane, #00f0ff);
+  border-radius: 14px;
+  background: rgba(8, 4, 20, 0.75);
+  color: var(--lane, #fff);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1rem, 4.5vw, 1.4rem);
+  letter-spacing: 0.06em;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--lane) 35%, transparent);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.touch-key:active,
+.touch-key.active {
+  background: color-mix(in srgb, var(--lane) 35%, rgba(0, 0, 0, 0.4));
+  transform: scale(0.97);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--lane) 55%, transparent);
+}
+
+/* color-mix fallback */
+@supports not (background: color-mix(in srgb, red 50%, blue)) {
+  .touch-key {
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
+  }
+  .touch-key:active,
+  .touch-key.active {
+    background: rgba(0, 240, 255, 0.25);
+  }
 }
 
 .overlay {
@@ -597,24 +691,32 @@ html, body {
 }
 
 /* —— Mobile / touch layout —— */
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .screen {
-    padding: 0.75rem;
-    padding-top: max(0.75rem, env(safe-area-inset-top));
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    padding: 0.65rem;
+    padding-top: max(0.65rem, env(safe-area-inset-top));
+    padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
   }
 
   #screen-game {
-    padding: 0;
+    padding: 0 !important;
   }
 
   .title-panel {
     width: 100%;
-    padding: 1.2rem 1rem 1.1rem;
+    max-width: 100%;
+    padding: 1rem 0.75rem 0.9rem;
   }
 
   .logo {
-    width: min(100%, 340px);
+    width: min(100%, 280px);
+    height: auto;
+    max-width: 100%;
+  }
+
+  .touch-pad {
+    height: 28%;
+    min-height: 120px;
   }
 
   .btn {
