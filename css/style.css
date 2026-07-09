@@ -466,3 +466,122 @@ html, body {
   width: 100%;
   margin: 0;
 }
+
+.song-toolbar {
+  width: min(980px, 100%);
+  margin-bottom: 0.8rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.65rem;
+  border-radius: 6px;
+  color: var(--amber);
+  border: 1px solid rgba(255, 193, 74, 0.45);
+  vertical-align: middle;
+}
+
+.settings-panel.wide {
+  width: min(440px, 94vw);
+  text-align: left;
+}
+
+.settings-panel.wide h2,
+.settings-panel.wide .btn.primary {
+  text-align: center;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.7rem 0;
+  font-size: 0.95rem;
+}
+
+.setting-row input[type="text"],
+.setting-row input[type="number"] {
+  flex: 1;
+  max-width: 200px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 0.4rem 0.55rem;
+  font: inherit;
+}
+
+.setting-row input[type="range"] {
+  flex: 1;
+}
+
+.offset-row.compact {
+  margin: 0;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+}
+
+.practice-box {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.practice-fields {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.practice-fields input,
+.practice-fields select {
+  margin-left: 0.35rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 0.25rem 0.4rem;
+  width: 5rem;
+}
+
+.row-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin: 0.8rem 0;
+}
+
+.row-actions .btn {
+  width: 100%;
+  margin: 0;
+}
+
+.muted.small,
+.small {
+  font-size: 0.85rem;
+}
+
+.newbest {
+  color: var(--amber);
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  margin-bottom: 0.3rem;
+}
+
+#import-status {
+  min-height: 1.2em;
+}
