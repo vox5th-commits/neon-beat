@@ -32,7 +32,7 @@ export function createRenderer(canvas) {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
 
-    const beat = ((now * (bpm / 60)) % 1);
+    const beat = (now * (bpm / 60)) % 1;
     const pulse = 0.04 + 0.03 * Math.sin(beat * Math.PI * 2);
 
     ctx.save();
@@ -49,7 +49,6 @@ export function createRenderer(canvas) {
     }
     ctx.restore();
 
-    // side vignette
     const vg = ctx.createLinearGradient(0, 0, w, 0);
     vg.addColorStop(0, "rgba(0,0,0,0.75)");
     vg.addColorStop(0.3, "rgba(0,0,0,0)");
@@ -83,7 +82,6 @@ export function createRenderer(canvas) {
       ctx.lineTo(x, h);
       ctx.stroke();
 
-      // receptor
       const rx = x + 8;
       const rw = laneW - 16;
       const ry = judgeY - 12;
@@ -107,7 +105,6 @@ export function createRenderer(canvas) {
       ctx.fillText(KEYS[i], x + laneW / 2, judgeY + 40);
     }
 
-    // judgment line glow
     ctx.save();
     ctx.strokeStyle = "rgba(255,255,255,0.85)";
     ctx.shadowColor = "#00f0ff";
@@ -120,31 +117,57 @@ export function createRenderer(canvas) {
     ctx.restore();
   }
 
-  function drawNote(note, now, pixelsPerSec, lay) {
+  function drawNote(note, now, pixelsPerSec, lay, opts = {}) {
     const { left, laneW, judgeY } = lay;
+    const color = LANE_COLORS[note.lane];
+    const x = left + note.lane * laneW + 10;
+    const nw = laneW - 20;
+    const isLong = note.dur > 0.05;
+
+    if (isLong) {
+      const yHead = judgeY - (note.t - now) * pixelsPerSec;
+      const yTail = judgeY - (note.t + note.dur - now) * pixelsPerSec;
+      const top = Math.min(yHead, yTail);
+      const bot = Math.max(yHead, yTail);
+      if (bot < -40 || top > h + 40) return;
+
+      const holding = opts.holding || note.holding;
+      ctx.save();
+      ctx.globalAlpha = holding ? 0.95 : 0.75;
+      ctx.fillStyle = `rgba(${hexToRgb(color)}, 0.35)`;
+      const bodyTop = holding ? Math.min(judgeY, bot) : top;
+      const bodyBot = holding ? judgeY : bot;
+      roundRect(ctx, x + 4, bodyTop, nw - 8, Math.max(8, bodyBot - bodyTop), 6);
+      ctx.fill();
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = color;
+      roundRect(ctx, x, yHead - 11, nw, 22, 9);
+      ctx.fill();
+      roundRect(ctx, x, yTail - 9, nw, 18, 8);
+      ctx.fill();
+      ctx.restore();
+      return;
+    }
+
     const dt = note.t - now;
     const y = judgeY - dt * pixelsPerSec;
     if (y < -40 || y > h + 40) return;
 
-    const x = left + note.lane * laneW + 10;
-    const nw = laneW - 20;
-    const nh = 22;
-    const color = LANE_COLORS[note.lane];
-
     ctx.save();
     ctx.shadowColor = color;
     ctx.shadowBlur = 14;
-    const grad = ctx.createLinearGradient(x, y - nh, x, y + nh);
+    const grad = ctx.createLinearGradient(x, y - 22, x, y + 22);
     grad.addColorStop(0, "#ffffff");
     grad.addColorStop(0.25, color);
     grad.addColorStop(1, shade(color, 0.45));
     ctx.fillStyle = grad;
-    roundRect(ctx, x, y - nh / 2, nw, nh, 9);
+    roundRect(ctx, x, y - 11, nw, 22, 9);
     ctx.fill();
     ctx.restore();
   }
 
-  function drawHud(stats, songTitle, diffName) {
+  function drawHud(stats, songTitle, diffName, extra = {}) {
     ctx.save();
     ctx.textAlign = "left";
     ctx.fillStyle = "rgba(255,255,255,0.7)";
@@ -163,6 +186,26 @@ export function createRenderer(canvas) {
     ctx.font = "600 16px Rajdhani, sans-serif";
     ctx.fillStyle = "rgba(255,255,255,0.7)";
     ctx.fillText(`${acc}%`, w - 24, 68);
+
+    // progress
+    const prog = extra.progress || 0;
+    ctx.fillStyle = "rgba(255,255,255,0.12)";
+    ctx.fillRect(24, 72, 160, 6);
+    ctx.fillStyle = "#00f0ff";
+    ctx.fillRect(24, 72, 160 * prog, 6);
+
+    // life
+    if (extra.lifeEnabled !== false) {
+      const life = stats.life / (stats.maxLife || 100);
+      ctx.fillStyle = "rgba(255,255,255,0.12)";
+      ctx.fillRect(24, h - 36, 180, 10);
+      ctx.fillStyle = life > 0.3 ? "#7dff6a" : "#ff4d6d";
+      ctx.fillRect(24, h - 36, 180 * life, 10);
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.font = "600 12px Rajdhani, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("LIFE", 24, h - 42);
+    }
 
     if (stats.combo > 1) {
       ctx.textAlign = "center";
