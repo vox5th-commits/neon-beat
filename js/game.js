@@ -219,9 +219,8 @@ export function createGame(canvas, hooks = {}) {
     notes = allNotes;
     stats = createScoreState(countJudgable(notes));
     songOffset = (bundle.offsetMs || 0) / 1000;
-    const mobile = typeof window !== "undefined" && window.innerWidth <= 720;
-    // Slightly slower scroll on phone so notes stay readable with wider lanes
-    const mobileScroll = mobile ? 0.88 : 1;
+    const mobile = typeof window !== "undefined" && window.innerWidth <= 900;
+    const mobileScroll = mobile ? 0.85 : 1;
     pixelsPerSec =
       480 * (chart.scrollSpeed || 1) * (state.scrollSpeed || 1) * mobileScroll;
     finished = false;
@@ -247,7 +246,8 @@ export function createGame(canvas, hooks = {}) {
     audio.stop();
 
     renderer.resize();
-    input.attach(canvas);
+    const pad = document.getElementById("touch-pad");
+    input.attach(canvas, pad);
     running = true;
     lastTs = performance.now();
     musicStarted = true;
@@ -336,6 +336,7 @@ export function createGame(canvas, hooks = {}) {
     renderer.drawHud(stats, songMeta?.title || "", diffName, {
       progress,
       lifeEnabled: state.lifeEnabled,
+      touchTop: lay.touchTop,
     });
   }
 
