@@ -31,6 +31,18 @@ export function createFx() {
     judgments.push({ text, color, x, y, life: 0.55, age: 0 });
   }
 
+  function spawnMilestone(combo) {
+    judgments.push({
+      text: `${combo} COMBO!`,
+      color: "#ff2bd6",
+      x: typeof window !== "undefined" ? window.innerWidth / 2 : 400,
+      y: typeof window !== "undefined" ? window.innerHeight * 0.22 : 120,
+      life: 0.9,
+      age: 0,
+      big: true,
+    });
+  }
+
   function update(dt) {
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
@@ -79,12 +91,13 @@ export function createFx() {
       const t = 1 - j.age / j.life;
       ctx.save();
       ctx.globalAlpha = Math.min(1, t * 1.4);
-      ctx.font = "900 34px Orbitron, sans-serif";
+      ctx.font = j.big ? "900 42px Orbitron, sans-serif" : "900 34px Orbitron, sans-serif";
       ctx.textAlign = "center";
       ctx.fillStyle = j.color;
       ctx.shadowColor = j.color;
       ctx.shadowBlur = 12;
-      ctx.fillText(j.text, j.x, j.y);
+      const lines = String(j.text).split("\n");
+      lines.forEach((line, i) => ctx.fillText(line, j.x, j.y + i * 28));
       ctx.restore();
     }
   }
@@ -95,7 +108,7 @@ export function createFx() {
     judgments.length = 0;
   }
 
-  return { spawnHit, spawnJudge, update, draw, clear, LANE_COLORS };
+  return { spawnHit, spawnJudge, spawnMilestone, update, draw, clear, LANE_COLORS };
 }
 
 export { LANE_COLORS };

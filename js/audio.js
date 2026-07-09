@@ -8,7 +8,8 @@ let startedAt = 0;
 let offsetWhenStarted = 0;
 let playing = false;
 let duration = 0;
-let mode = "none"; // file | synth
+let mode = "none";
+let playbackRate = 1;
 
 export async function ensureAudio() {
   if (!ctx) {
@@ -23,16 +24,27 @@ export async function ensureAudio() {
   return ctx;
 }
 
+export function getAudioContext() {
+  return ctx;
+}
+
 /**
- * Load audio from URL, or fall back to synth.
- * @param {string} url
- * @param {{ bpm?: number, notes?: any[], songId?: string, forceSynth?: boolean }} [opts]
+ * @param {string|null} url
+ * @param {{ bpm?: number, notes?: any[], songId?: string, forceSynth?: boolean, audioBuffer?: AudioBuffer, playbackRate?: number }} [opts]
  */
 export async function loadTrack(url, opts = {}) {
   await ensureAudio();
   stop();
   buffer = null;
   mode = "none";
+  playbackRate = opts.playbackRate || 1;
+
+  if (opts.audioBuffer) {
+    buffer = opts.audioBuffer;
+    duration = buffer.duration;
+    mode = "file";
+    return duration;
+  }
 
   const forceSynth =
     opts.forceSynth ||
@@ -55,7 +67,7 @@ export async function loadTrack(url, opts = {}) {
   }
 
   buffer = await renderSynthBuffer(ctx, {
-    bpm: opts.bpm || 128,
+    bpm: (opts.bpm || 128) * playbackRate,
     notes: opts.notes || [],
     songId: opts.songId || "",
     duration: opts.duration,
@@ -70,12 +82,13 @@ export function play(fromSec = 0) {
   stopSourceOnly();
   source = ctx.createBufferSource();
   source.buffer = buffer;
+  source.playbackRate.value = playbackRate;
   source.connect(masterGain);
   offsetWhenStarted = Math.max(0, fromSec);
   startedAt = ctx.currentTime;
   playing = true;
   source.onended = () => {
-    if (playing && currentTime() >= duration - 0.05) {
+    if (playing && currentTime() >= getDuration() - 0.05) {
       playing = false;
     }
   };
@@ -109,17 +122,19 @@ function stopSourceOnly() {
       source.onended = null;
       source.stop();
     } catch {
-      /* already stopped */
+      /* */
     }
     source.disconnect();
     source = null;
   }
 }
 
+/** Song timeline seconds (accounts for playbackRate). */
 export function currentTime() {
   if (!ctx) return 0;
   if (!playing) return offsetWhenStarted;
-  return offsetWhenStarted + (ctx.currentTime - startedAt);
+  const elapsed = (ctx.currentTime - startedAt) * playbackRate;
+  return offsetWhenStarted + elapsed;
 }
 
 export function isPlaying() {
