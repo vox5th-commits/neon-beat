@@ -1,0 +1,5 @@
+_batches/
+_push_manifest.json
+_deploy_list.txt
+*.wav
+스크린샷*
