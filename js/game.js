@@ -45,7 +45,8 @@ export function createGame(canvas, hooks = {}) {
     (lane) => {
       if (!running || paused || finished) return;
       handleRelease(lane);
-    }
+    },
+    () => renderer.layout()
   );
 
   function handleHit(lane) {
@@ -218,7 +219,11 @@ export function createGame(canvas, hooks = {}) {
     notes = allNotes;
     stats = createScoreState(countJudgable(notes));
     songOffset = (bundle.offsetMs || 0) / 1000;
-    pixelsPerSec = 480 * (chart.scrollSpeed || 1) * (state.scrollSpeed || 1);
+    const mobile = typeof window !== "undefined" && window.innerWidth <= 720;
+    // Slightly slower scroll on phone so notes stay readable with wider lanes
+    const mobileScroll = mobile ? 0.88 : 1;
+    pixelsPerSec =
+      480 * (chart.scrollSpeed || 1) * (state.scrollSpeed || 1) * mobileScroll;
     finished = false;
     paused = false;
     musicStarted = false;
@@ -242,7 +247,7 @@ export function createGame(canvas, hooks = {}) {
     audio.stop();
 
     renderer.resize();
-    input.attach();
+    input.attach(canvas);
     running = true;
     lastTs = performance.now();
     musicStarted = true;
