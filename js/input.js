@@ -6,34 +6,44 @@ const DEFAULT_MAP = {
 };
 
 /**
- * Keyboard + multi-touch / mouse via Pointer Events.
- * @param {(lane:number, t:number)=>void} onLaneDown
- * @param {(lane:number)=>void} onLaneUp
- * @param {() => { left:number, laneW:number, highwayW:number, judgeY:number } | null} getLayout
+ * Keyboard + DOM touch pad + canvas pointer.
+ * DOM pad is the reliable path on mobile.
  */
 export function createInput(onLaneDown, onLaneUp, getLayout) {
   const held = new Set();
   const keyToLane = { ...DEFAULT_MAP };
-  /** @type {Map<number, number>} pointerId -> lane */
+  /** @type {Map<number, number>} */
   const pointerLanes = new Map();
-  let target = null;
+  /** @type {Map<string, number>} touch identifier or btn id -> lane */
+  const touchLanes = new Map();
+  let canvas = null;
+  let pad = null;
+  let padButtons = [];
 
   function pressLane(lane) {
     if (lane === undefined || lane < 0 || lane > 3) return;
     if (held.has(lane)) return;
     held.add(lane);
     onLaneDown?.(lane, performance.now());
+    syncPadVisual();
   }
 
   function releaseLane(lane) {
     if (lane === undefined) return;
+    // Keep held if any pointer/touch still on this lane
+    for (const [, l] of pointerLanes) if (l === lane) return;
+    for (const [, l] of touchLanes) if (l === lane) return;
     if (!held.has(lane)) return;
-    // Only release if no other pointer still holding this lane
-    for (const [, l] of pointerLanes) {
-      if (l === lane) return;
-    }
     held.delete(lane);
     onLaneUp?.(lane);
+    syncPadVisual();
+  }
+
+  function syncPadVisual() {
+    for (const btn of padButtons) {
+      const lane = Number(btn.dataset.lane);
+      btn.classList.toggle("active", held.has(lane));
+    }
   }
 
   function onKeyDown(e) {
@@ -48,43 +58,44 @@ export function createInput(onLaneDown, onLaneUp, getLayout) {
     const lane = keyToLane[e.key.toLowerCase()];
     if (lane === undefined) return;
     e.preventDefault();
-    // keyboard doesn't use pointerLanes
+    // keyboard release: only if not held by touch/pointer
+    for (const [, l] of pointerLanes) if (l === lane) return;
+    for (const [, l] of touchLanes) if (l === lane) return;
     if (!held.has(lane)) return;
-    let still = false;
-    for (const [, l] of pointerLanes) {
-      if (l === lane) still = true;
-    }
-    if (still) return;
     held.delete(lane);
     onLaneUp?.(lane);
+    syncPadVisual();
   }
 
   function laneFromClientX(clientX) {
     const lay = getLayout?.();
-    if (!lay || !target) return -1;
-    const rect = target.getBoundingClientRect();
-    const x = clientX - rect.left;
-    // scale if CSS size != layout space (layout uses clientWidth coords)
-    const scaleX = target.clientWidth / rect.width || 1;
-    const lx = x * scaleX;
-    if (lx < lay.left || lx >= lay.left + lay.highwayW) {
-      // allow slight padding outside highway on mobile
-      const pad = lay.laneW * 0.15;
-      if (lx < lay.left - pad || lx >= lay.left + lay.highwayW + pad) return -1;
+    if (!lay || !canvas || !lay.highwayW) return -1;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width <= 0) return -1;
+    const lx = ((clientX - rect.left) / rect.width) * (canvas.clientWidth || rect.width);
+    const left = lay.left;
+    const right = lay.left + lay.highwayW;
+    if (lx < left - 4 || lx > right + 4) {
+      // full-width fallback: divide screen into 4
+      const w = canvas.clientWidth || rect.width;
+      return Math.min(3, Math.max(0, Math.floor((lx / w) * 4)));
     }
-    const rel = Math.min(lay.highwayW - 0.001, Math.max(0, lx - lay.left));
+    const rel = Math.min(lay.highwayW - 0.001, Math.max(0, lx - left));
     return Math.min(3, Math.max(0, Math.floor(rel / lay.laneW)));
   }
 
-  function onPointerDown(e) {
-    if (!target) return;
-    // Only primary buttons for mouse; all touches ok
+  function onCanvasPointerDown(e) {
+    if (!canvas) return;
     if (e.pointerType === "mouse" && e.button !== 0) return;
+    // Prefer DOM pad on coarse pointers when pad is visible
+    if (pad && !pad.classList.contains("hidden") && e.pointerType === "touch") {
+      return;
+    }
     const lane = laneFromClientX(e.clientX);
     if (lane < 0) return;
     e.preventDefault();
     try {
-      target.setPointerCapture(e.pointerId);
+      canvas.setPointerCapture(e.pointerId);
     } catch {
       /* */
     }
@@ -92,51 +103,137 @@ export function createInput(onLaneDown, onLaneUp, getLayout) {
     pressLane(lane);
   }
 
-  function onPointerUp(e) {
+  function onCanvasPointerUp(e) {
     const lane = pointerLanes.get(e.pointerId);
     if (lane === undefined) return;
     e.preventDefault();
     pointerLanes.delete(e.pointerId);
     releaseLane(lane);
-    try {
-      target?.releasePointerCapture(e.pointerId);
-    } catch {
-      /* */
+  }
+
+  function bindPadButton(btn) {
+    const lane = Number(btn.dataset.lane);
+
+    const down = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = e.pointerId != null ? `p${e.pointerId}` : `btn${lane}`;
+      touchLanes.set(id, lane);
+      try {
+        if (e.pointerId != null) btn.setPointerCapture(e.pointerId);
+      } catch {
+        /* */
+      }
+      pressLane(lane);
+    };
+
+    const up = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = e.pointerId != null ? `p${e.pointerId}` : `btn${lane}`;
+      touchLanes.delete(id);
+      // safety: clear orphaned ids for this lane
+      for (const [k, l] of [...touchLanes]) {
+        if (l === lane && k.startsWith("p") === (e.pointerId != null)) {
+          /* keep other pointers */
+        }
+      }
+      releaseLane(lane);
+    };
+
+    btn.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // Prefer a single event family to avoid double-fire (pointer + touch)
+    if (typeof window.PointerEvent === "function") {
+      btn.addEventListener("pointerdown", down);
+      btn.addEventListener("pointerup", up);
+      btn.addEventListener("pointercancel", up);
+      btn.addEventListener("lostpointercapture", up);
+    } else {
+      btn.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          for (const t of e.changedTouches) touchLanes.set(`t${t.identifier}`, lane);
+          pressLane(lane);
+        },
+        { passive: false }
+      );
+      const touchUp = (e) => {
+        e.preventDefault();
+        for (const t of e.changedTouches) touchLanes.delete(`t${t.identifier}`);
+        releaseLane(lane);
+      };
+      btn.addEventListener("touchend", touchUp, { passive: false });
+      btn.addEventListener("touchcancel", touchUp, { passive: false });
+      btn.addEventListener("mousedown", down);
+      btn.addEventListener("mouseup", up);
     }
   }
 
-  function onPointerCancel(e) {
-    onPointerUp(e);
-  }
+  /**
+   * @param {HTMLCanvasElement} canvasEl
+   * @param {HTMLElement | null} padEl
+   */
+  function attach(canvasEl, padEl = null) {
+    detach();
+    canvas = canvasEl || null;
+    pad = padEl || document.getElementById("touch-pad");
+    padButtons = pad ? [...pad.querySelectorAll("[data-lane]")] : [];
 
-  function attach(el) {
-    target = el || null;
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
-    if (target) {
-      target.addEventListener("pointerdown", onPointerDown);
-      target.addEventListener("pointerup", onPointerUp);
-      target.addEventListener("pointercancel", onPointerCancel);
-      target.style.touchAction = "none";
+
+    if (canvas) {
+      canvas.addEventListener("pointerdown", onCanvasPointerDown);
+      canvas.addEventListener("pointerup", onCanvasPointerUp);
+      canvas.addEventListener("pointercancel", onCanvasPointerUp);
+      canvas.style.touchAction = "none";
+    }
+
+    for (const btn of padButtons) bindPadButton(btn);
+
+    if (pad) {
+      pad.classList.remove("hidden");
+      document.body.classList.add("playing-game");
     }
   }
 
   function detach() {
     window.removeEventListener("keydown", onKeyDown);
     window.removeEventListener("keyup", onKeyUp);
-    if (target) {
-      target.removeEventListener("pointerdown", onPointerDown);
-      target.removeEventListener("pointerup", onPointerUp);
-      target.removeEventListener("pointercancel", onPointerCancel);
+    if (canvas) {
+      canvas.removeEventListener("pointerdown", onCanvasPointerDown);
+      canvas.removeEventListener("pointerup", onCanvasPointerUp);
+      canvas.removeEventListener("pointercancel", onCanvasPointerUp);
     }
+    // pad buttons: clone to drop listeners
+    if (pad) {
+      pad.classList.add("hidden");
+      for (const btn of padButtons) {
+        const neo = btn.cloneNode(true);
+        btn.parentNode?.replaceChild(neo, btn);
+      }
+    }
+    document.body.classList.remove("playing-game");
     pointerLanes.clear();
+    touchLanes.clear();
     held.clear();
-    target = null;
+    canvas = null;
+    pad = null;
+    padButtons = [];
   }
 
-  function isHeld(lane) {
-    return held.has(lane);
+  function setPadVisible(v) {
+    if (!pad) return;
+    pad.classList.toggle("hidden", !v);
   }
 
-  return { attach, detach, isHeld, held };
+  return {
+    attach,
+    detach,
+    setPadVisible,
+    isHeld: (lane) => held.has(lane),
+    held,
+  };
 }
