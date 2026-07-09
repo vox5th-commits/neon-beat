@@ -14,7 +14,6 @@
     <div id="bg-layer" class="bg-layer"></div>
     <div id="app-banner" class="app-banner hidden" role="alert"></div>
 
-    <!-- Title -->
     <section id="screen-title" class="screen active">
       <div class="title-panel glass">
         <img class="logo" src="assets/art/logo.png" alt="NEON BEAT" />
@@ -23,22 +22,25 @@
           <span>D</span><span>F</span><span>J</span><span>K</span>
         </div>
         <button id="btn-start" class="btn primary">START</button>
-        <button id="btn-settings" class="btn ghost">OFFSET SETTINGS</button>
-        <p class="hint-text">D F J K 로 노트 히트 · 로컬은 start.bat 실행 후 접속</p>
+        <button id="btn-settings" class="btn ghost">SETTINGS</button>
+        <button id="btn-calibrate" class="btn ghost">OFFSET CALIBRATE</button>
+        <p class="hint-text">D F J K · 롱노트는 끝까지 홀드 · 내 음악 불러오기 지원</p>
       </div>
     </section>
 
-    <!-- Song select -->
     <section id="screen-songs" class="screen">
       <header class="top-bar">
         <button class="btn ghost small" data-nav="title">← BACK</button>
         <h1>SELECT TRACK</h1>
         <span class="spacer"></span>
       </header>
+      <div class="song-toolbar">
+        <button id="btn-import-song" class="btn primary small">+ 내 음악 불러오기</button>
+        <input id="file-audio" type="file" accept="audio/*" hidden />
+      </div>
       <div id="song-list" class="song-list"></div>
     </section>
 
-    <!-- Difficulty -->
     <section id="screen-diff" class="screen">
       <header class="top-bar">
         <button class="btn ghost small" data-nav="songs">← BACK</button>
@@ -50,16 +52,29 @@
         <div class="diff-meta">
           <h2 id="diff-song-name"></h2>
           <p id="diff-song-info"></p>
+          <p id="diff-highscore" class="muted"></p>
           <div class="diff-buttons">
             <button class="btn diff easy" data-diff="easy">EASY</button>
             <button class="btn diff normal" data-diff="normal">NORMAL</button>
             <button class="btn diff hard" data-diff="hard">HARD</button>
           </div>
+          <div class="practice-box">
+            <label class="check"><input type="checkbox" id="practice-enable" /> 연습 모드</label>
+            <div class="practice-fields">
+              <label>시작(초) <input id="practice-start" type="number" min="0" step="1" value="0" /></label>
+              <label>끝(초) <input id="practice-end" type="number" min="1" step="1" value="30" /></label>
+              <label>배속
+                <select id="practice-rate">
+                  <option value="0.75">0.75x</option>
+                  <option value="1" selected>1.0x</option>
+                </select>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Gameplay -->
     <section id="screen-game" class="screen">
       <canvas id="game-canvas"></canvas>
       <div id="pause-overlay" class="overlay hidden">
@@ -72,11 +87,11 @@
       <div id="countdown" class="countdown hidden">3</div>
     </section>
 
-    <!-- Result -->
     <section id="screen-result" class="screen">
       <div class="result-panel glass">
         <p class="result-label">RESULT</p>
         <div id="result-rank" class="result-rank">A</div>
+        <p id="result-newbest" class="newbest hidden">NEW BEST!</p>
         <h2 id="result-song"></h2>
         <p id="result-diff" class="muted"></p>
         <div class="result-stats">
@@ -95,17 +110,69 @@
       </div>
     </section>
 
-    <!-- Settings modal -->
     <div id="settings-modal" class="overlay hidden">
-      <div class="glass settings-panel">
-        <h2>AUDIO OFFSET</h2>
-        <p class="muted">노트가 이르면 +, 늦으면 − (ms)</p>
-        <div class="offset-row">
-          <button id="offset-minus" class="btn ghost small">−10</button>
-          <strong id="offset-value">0 ms</strong>
-          <button id="offset-plus" class="btn ghost small">+10</button>
+      <div class="glass settings-panel wide">
+        <h2>SETTINGS</h2>
+        <div class="setting-row">
+          <span>Audio Offset</span>
+          <div class="offset-row compact">
+            <button id="offset-minus" class="btn ghost small">−10</button>
+            <strong id="offset-value">0 ms</strong>
+            <button id="offset-plus" class="btn ghost small">+10</button>
+          </div>
         </div>
+        <div class="setting-row">
+          <span>Scroll Speed</span>
+          <div class="offset-row compact">
+            <button id="scroll-minus" class="btn ghost small">−0.1</button>
+            <strong id="scroll-value">1.0x</strong>
+            <button id="scroll-plus" class="btn ghost small">+0.1</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Hit SFX Volume</span>
+          <input id="sfx-volume" type="range" min="0" max="100" value="55" />
+        </div>
+        <div class="setting-row">
+          <label class="check"><input type="checkbox" id="life-enabled" checked /> Life bar (Miss 시 감소)</label>
+        </div>
+        <p class="muted small">노트가 이르게 느껴지면 Offset +, 늦게 느껴지면 −</p>
         <button id="settings-close" class="btn primary">DONE</button>
+      </div>
+    </div>
+
+    <div id="import-modal" class="overlay hidden">
+      <div class="glass settings-panel wide">
+        <h2>내 음악 불러오기</h2>
+        <p class="muted">mp3 / wav / ogg · 본인 소유·허가 음원만 사용하세요</p>
+        <p id="import-filename" class="muted">파일 없음</p>
+        <div class="setting-row">
+          <span>제목</span>
+          <input id="import-title" type="text" placeholder="Track title" />
+        </div>
+        <div class="setting-row">
+          <span>BPM (비우면 자동)</span>
+          <input id="import-bpm" type="number" min="60" max="220" placeholder="auto" />
+        </div>
+        <div class="row-actions">
+          <button id="import-pick" class="btn ghost">파일 선택</button>
+          <button id="import-confirm" class="btn primary">차트 생성 & 추가</button>
+        </div>
+        <button id="import-close" class="btn ghost">취소</button>
+        <p id="import-status" class="muted small"></p>
+      </div>
+    </div>
+
+    <div id="calib-modal" class="overlay hidden">
+      <div class="glass settings-panel">
+        <h2>OFFSET CALIBRATE</h2>
+        <p class="muted">메트로놈 비트에 맞춰 아무 키나 탭 (8회)</p>
+        <strong id="calib-count">0 / 8</strong>
+        <p id="calib-result" class="muted"></p>
+        <div class="row-actions">
+          <button id="calib-start" class="btn primary">START</button>
+          <button id="calib-close" class="btn ghost">CLOSE</button>
+        </div>
       </div>
     </div>
   </div>
