@@ -77,6 +77,12 @@
 
     <section id="screen-game" class="screen">
       <canvas id="game-canvas"></canvas>
+      <div id="touch-pad" class="touch-pad hidden" aria-label="Touch lanes">
+        <button type="button" class="touch-key" data-lane="0" style="--lane:#00f0ff">D</button>
+        <button type="button" class="touch-key" data-lane="1" style="--lane:#7dff6a">F</button>
+        <button type="button" class="touch-key" data-lane="2" style="--lane:#ffc14a">J</button>
+        <button type="button" class="touch-key" data-lane="3" style="--lane:#ff2bd6">K</button>
+      </div>
       <div id="pause-overlay" class="overlay hidden">
         <div class="glass pause-panel">
           <h2>PAUSED</h2>
