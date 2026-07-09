@@ -1,0 +1,34 @@
+[
+  {
+    "id": "pulse-drive",
+    "title": "Pulse Drive",
+    "artist": "NEON BEAT",
+    "bpm": 128,
+    "audio": "audio.wav",
+    "jacket": "jacket.png",
+    "offsetMs": 0,
+    "previewStart": 8,
+    "durationLabel": "31s",
+    "difficulties": {
+      "easy": "easy.json",
+      "normal": "normal.json",
+      "hard": "hard.json"
+    }
+  },
+  {
+    "id": "neon-grid",
+    "title": "Neon Grid",
+    "artist": "NEON BEAT",
+    "bpm": 140,
+    "audio": "audio.wav",
+    "jacket": "jacket.png",
+    "offsetMs": 0,
+    "previewStart": 8,
+    "durationLabel": "28s",
+    "difficulties": {
+      "easy": "easy.json",
+      "normal": "normal.json",
+      "hard": "hard.json"
+    }
+  }
+]

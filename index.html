@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEON BEAT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <div id="bg-layer" class="bg-layer"></div>
+    <div id="app-banner" class="app-banner hidden" role="alert"></div>
+
+    <!-- Title -->
+    <section id="screen-title" class="screen active">
+      <div class="title-panel glass">
+        <img class="logo" src="assets/art/logo.png" alt="NEON BEAT" />
+        <p class="tagline">4-KEY ARCADE RHYTHM</p>
+        <div class="key-hint">
+          <span>D</span><span>F</span><span>J</span><span>K</span>
+        </div>
+        <button id="btn-start" class="btn primary">START</button>
+        <button id="btn-settings" class="btn ghost">OFFSET SETTINGS</button>
+        <p class="hint-text">D F J K 로 노트 히트 · 로컬은 start.bat 실행 후 접속</p>
+      </div>
+    </section>
+
+    <!-- Song select -->
+    <section id="screen-songs" class="screen">
+      <header class="top-bar">
+        <button class="btn ghost small" data-nav="title">← BACK</button>
+        <h1>SELECT TRACK</h1>
+        <span class="spacer"></span>
+      </header>
+      <div id="song-list" class="song-list"></div>
+    </section>
+
+    <!-- Difficulty -->
+    <section id="screen-diff" class="screen">
+      <header class="top-bar">
+        <button class="btn ghost small" data-nav="songs">← BACK</button>
+        <h1 id="diff-title">DIFFICULTY</h1>
+        <span class="spacer"></span>
+      </header>
+      <div class="diff-layout">
+        <img id="diff-jacket" class="diff-jacket" alt="" />
+        <div class="diff-meta">
+          <h2 id="diff-song-name"></h2>
+          <p id="diff-song-info"></p>
+          <div class="diff-buttons">
+            <button class="btn diff easy" data-diff="easy">EASY</button>
+            <button class="btn diff normal" data-diff="normal">NORMAL</button>
+            <button class="btn diff hard" data-diff="hard">HARD</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gameplay -->
+    <section id="screen-game" class="screen">
+      <canvas id="game-canvas"></canvas>
+      <div id="pause-overlay" class="overlay hidden">
+        <div class="glass pause-panel">
+          <h2>PAUSED</h2>
+          <button id="btn-resume" class="btn primary">RESUME</button>
+          <button id="btn-quit-song" class="btn ghost">QUIT TO SONGS</button>
+        </div>
+      </div>
+      <div id="countdown" class="countdown hidden">3</div>
+    </section>
+
+    <!-- Result -->
+    <section id="screen-result" class="screen">
+      <div class="result-panel glass">
+        <p class="result-label">RESULT</p>
+        <div id="result-rank" class="result-rank">A</div>
+        <h2 id="result-song"></h2>
+        <p id="result-diff" class="muted"></p>
+        <div class="result-stats">
+          <div><span>SCORE</span><strong id="stat-score">0</strong></div>
+          <div><span>ACCURACY</span><strong id="stat-acc">0%</strong></div>
+          <div><span>MAX COMBO</span><strong id="stat-combo">0</strong></div>
+          <div><span>PERFECT</span><strong id="stat-perfect">0</strong></div>
+          <div><span>GREAT</span><strong id="stat-great">0</strong></div>
+          <div><span>GOOD</span><strong id="stat-good">0</strong></div>
+          <div><span>MISS</span><strong id="stat-miss">0</strong></div>
+        </div>
+        <div class="result-actions">
+          <button id="btn-retry" class="btn primary">RETRY</button>
+          <button id="btn-to-songs" class="btn ghost">SONG SELECT</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings modal -->
+    <div id="settings-modal" class="overlay hidden">
+      <div class="glass settings-panel">
+        <h2>AUDIO OFFSET</h2>
+        <p class="muted">노트가 이르면 +, 늦으면 − (ms)</p>
+        <div class="offset-row">
+          <button id="offset-minus" class="btn ghost small">−10</button>
+          <strong id="offset-value">0 ms</strong>
+          <button id="offset-plus" class="btn ghost small">+10</button>
+        </div>
+        <button id="settings-close" class="btn primary">DONE</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

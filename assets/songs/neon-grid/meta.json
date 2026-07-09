@@ -1,0 +1,16 @@
+{
+  "id": "neon-grid",
+  "title": "Neon Grid",
+  "artist": "NEON BEAT",
+  "bpm": 140,
+  "audio": "audio.wav",
+  "jacket": "jacket.png",
+  "offsetMs": 0,
+  "previewStart": 8,
+  "durationLabel": "28s",
+  "difficulties": {
+    "easy": "easy.json",
+    "normal": "normal.json",
+    "hard": "hard.json"
+  }
+}
