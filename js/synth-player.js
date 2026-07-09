@@ -84,17 +84,26 @@ export async function renderSynthBuffer(ctx, opts) {
   master.gain.value = 0.85;
   master.connect(offline.destination);
 
-  // bed pad
+  // bed pad + soft sub
   {
     const osc = offline.createOscillator();
     const g = offline.createGain();
     osc.type = "sine";
     osc.frequency.value = style === "neon" ? 110 : 98;
-    g.gain.value = 0.04;
+    g.gain.value = 0.035;
     osc.connect(g);
     g.connect(master);
     osc.start(0);
     osc.stop(duration);
+    const sub = offline.createOscillator();
+    const sg = offline.createGain();
+    sub.type = "sine";
+    sub.frequency.value = style === "neon" ? 55 : 49;
+    sg.gain.value = 0.05;
+    sub.connect(sg);
+    sg.connect(master);
+    sub.start(0);
+    sub.stop(duration);
   }
 
   // rhythmic grid from BPM
