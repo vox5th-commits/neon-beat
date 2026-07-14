@@ -165,7 +165,7 @@ export function createGame(canvas, hooks = {}) {
           fx.spawnJudge("MISS", JUDGE.MISS.color, pos.x, pos.y - 50);
           sfx.playHit("miss");
         } else if (n.holding && now > n.t + n.dur + JUDGE.GOOD.window) {
-          // held past end without release event — auto complete
+          // held past end without release event ??auto complete
           n.holdDone = true;
           n.hit = true;
           n.holding = false;
@@ -213,7 +213,7 @@ export function createGame(canvas, hooks = {}) {
       const b = practice.end ?? Infinity;
       allNotes = allNotes.filter((n) => n.t >= a && n.t <= b);
       for (const n of allNotes) {
-        // keep relative — music starts at practice.start
+        // keep relative ??music starts at practice.start
       }
     }
     notes = allNotes;
@@ -237,11 +237,11 @@ export function createGame(canvas, hooks = {}) {
     const startAt = practice?.start || 0;
     await audio.loadTrack(bundle.audioUrl, {
       bpm: bundle.bpm,
-      notes: notes.map((n) => ({ t: n.t, lane: n.lane })),
+      notes: notes.map((n) => ({ t: n.t, lane: n.lane, dur: n.dur || 0 })),
       songId: bundle.id,
       audioBuffer: bundle.audioBuffer,
       playbackRate: playRate,
-      duration: bundle.audioBuffer?.duration,
+      duration: bundle.audioBuffer?.duration || bundle.durationSec || undefined,
     });
     audio.stop();
 
