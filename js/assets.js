@@ -47,6 +47,7 @@ function defaultJacket(title, c1, c2) {
 const FALLBACK_JACKETS = {
   "pulse-drive": defaultJacket("PULSE DRIVE", "#12104a", "#00f0ff"),
   "neon-grid": defaultJacket("NEON GRID", "#2a0a40", "#ff2bd6"),
+  "air-on-g": defaultJacket("AIR ON G", "#1a2040", "#d4af37"),
 };
 
 export function applyEmbeddedAssets() {

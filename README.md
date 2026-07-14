@@ -23,6 +23,8 @@
 - Practice mode (loop range + 0.75x)
 - Offset calibration mini-tool
 - **Import your own music** (mp3/wav/ogg) → auto chart Easy/Normal/Hard
+- Longer built-in tracks + section variety (intro / build / drop)
+- **Air on the G String** (J.S. Bach) — public-domain composition, original synth arrangement (no commercial recording used)
 
 ## Controls
 

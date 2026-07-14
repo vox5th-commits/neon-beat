@@ -8,7 +8,8 @@
     "jacket": "jacket.png",
     "offsetMs": 0,
     "previewStart": 8,
-    "durationLabel": "31s",
+    "durationSec": 61.5,
+    "durationLabel": "62s",
     "difficulties": {
       "easy": "easy.json",
       "normal": "normal.json",
@@ -24,7 +25,25 @@
     "jacket": "jacket.png",
     "offsetMs": 0,
     "previewStart": 8,
-    "durationLabel": "28s",
+    "durationSec": 56.4,
+    "durationLabel": "56s",
+    "difficulties": {
+      "easy": "easy.json",
+      "normal": "normal.json",
+      "hard": "hard.json"
+    }
+  },
+  {
+    "id": "air-on-g",
+    "title": "Air on the G String",
+    "artist": "J.S. Bach (synth arr.)",
+    "bpm": 76,
+    "audio": "audio.wav",
+    "jacket": "jacket.png",
+    "offsetMs": 0,
+    "previewStart": 12,
+    "durationSec": 133.6,
+    "durationLabel": "134s",
     "difficulties": {
       "easy": "easy.json",
       "normal": "normal.json",

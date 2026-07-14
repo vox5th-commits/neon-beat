@@ -7,7 +7,8 @@
   "jacket": "jacket.png",
   "offsetMs": 0,
   "previewStart": 8,
-  "durationLabel": "28s",
+  "durationSec": 56.4,
+  "durationLabel": "56s",
   "difficulties": {
     "easy": "easy.json",
     "normal": "normal.json",

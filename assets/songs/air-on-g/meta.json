@@ -1,0 +1,17 @@
+{
+  "id": "air-on-g",
+  "title": "Air on the G String",
+  "artist": "J.S. Bach (synth arr.)",
+  "bpm": 76,
+  "audio": "audio.wav",
+  "jacket": "jacket.png",
+  "offsetMs": 0,
+  "previewStart": 12,
+  "durationSec": 133.6,
+  "durationLabel": "134s",
+  "difficulties": {
+    "easy": "easy.json",
+    "normal": "normal.json",
+    "hard": "hard.json"
+  }
+}
