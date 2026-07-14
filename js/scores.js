@@ -43,10 +43,11 @@ export function applyJudge(stats, judge, opts = {}) {
   stats.judged += 1;
   stats.accSum += judge.acc;
 
+  // Life is cosmetic only — never force game over on miss
   if (lifeEnabled) {
     stats.life = Math.max(0, Math.min(stats.maxLife, stats.life + (judge.life || 0)));
-    if (stats.life <= 0) stats.failed = true;
   }
+  stats.failed = false;
 
   if (judge.name === "MISS") {
     stats.miss += 1;

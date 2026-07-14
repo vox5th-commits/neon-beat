@@ -17,7 +17,7 @@ export const state = {
   audioOffsetMs: num("neonbeat_offset", 0),
   scrollSpeed: num("neonbeat_scroll", 1),
   sfxVolume: num("neonbeat_sfx", 0.55),
-  lifeEnabled: bool("neonbeat_life", true),
+  lifeEnabled: bool("neonbeat_life", false),
   lastResult: null,
   practice: null, // { start, end, rate } | null
 };

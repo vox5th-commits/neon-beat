@@ -107,7 +107,6 @@ export function createGame(canvas, hooks = {}) {
 
     checkMilestones();
     hooks.onJudge?.(j, stats);
-    if (stats.failed) endGame(true);
   }
 
   function handleRelease(lane) {
@@ -149,7 +148,6 @@ export function createGame(canvas, hooks = {}) {
       fx.spawnJudge("GOOD", JUDGE.GOOD.color, pos.x, pos.y - 50);
     }
     checkMilestones();
-    if (stats.failed) endGame(true);
   }
 
   function autoMiss(now) {
@@ -182,7 +180,6 @@ export function createGame(canvas, hooks = {}) {
         sfx.playHit("miss");
       }
     }
-    if (stats.failed) endGame(true);
   }
 
   function checkMilestones() {
